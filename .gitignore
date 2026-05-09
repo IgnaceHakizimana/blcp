@@ -13,7 +13,7 @@
 .springBeans
 .sts4-cache
 
-### Backend (Spring Boot) ###
+### Backend###
 backend-api/target/
 backend-api/build/
 backend-api/bin/
