@@ -1,0 +1,33 @@
+### IDEs ###
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.DS_Store
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### Backend###
+backend-api/target/
+backend-api/build/
+backend-api/bin/
+backend-api/logs/
+*.log
+
+### Frontend###
+ui/node_modules/
+ui/dist/
+ui/build/
+ui/.env
+ui/.env.*
+ui/.pnp.*
+ui/coverage/
+
+### Mac ###
+.DS_Store
