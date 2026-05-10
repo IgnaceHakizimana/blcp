@@ -20,14 +20,20 @@ backend-api/bin/
 backend-api/logs/
 *.log
 
-### Frontend###
+### Frontend ###
 ui/node_modules/
 ui/dist/
+ui/dist-ssr/
 ui/build/
 ui/.env
 ui/.env.*
-ui/.pnp.*
+ui/.env.local
+ui/.eslintcache
 ui/coverage/
+ui/npm-debug.log*
+ui/yarn-debug.log*
+ui/yarn-error.log*
+ui/pnpm-debug.log*
 
 ### Mac ###
 .DS_Store
