@@ -30,9 +30,32 @@ export default function ApplicantDashboard() {
   const handleSubmitApplication = async (id: string) => {
     try {
       await apiClient.post(`/applications/${id}/submit`);
-      fetchApplications(); // Refresh the list
+      fetchApplications();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to submit application');
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, appId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File exceeds the 5MB limit.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await apiClient.post(`/applications/${appId}/documents`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert('Document uploaded successfully!');
+      e.target.value = '';
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to upload document');
     }
   };
 
@@ -76,12 +99,22 @@ export default function ApplicantDashboard() {
                   View Documents
                 </button>
                 {(app.status === 'DRAFT' || app.status === 'INFO_REQUESTED') && (
-                  <button
-                    onClick={() => handleSubmitApplication(app.id)}
-                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                  >
-                    Submit
-                  </button>
+                  <>
+                    <label className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300 cursor-pointer font-medium">
+                      Upload Doc
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, app.id)}
+                      />
+                    </label>
+                    <button
+                      onClick={() => handleSubmitApplication(app.id)}
+                      className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                    >
+                      Submit
+                    </button>
+                  </>
                 )}
               </div>
             </div>
