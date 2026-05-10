@@ -7,12 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 import rw.bnr.backend_api.dto.LoginRequest;
 import lombok.RequiredArgsConstructor;
+import rw.bnr.backend_api.security.CustomUserDetails;
 
 import java.util.Map;
 
@@ -50,5 +52,16 @@ public class AuthController {
         }
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(Map.of("message", "Logout successful"));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, String>> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(Map.of(
+            "email", userDetails.getUsername(),
+            "role", userDetails.getUser().getRole().name()
+        ));
     }
 }
