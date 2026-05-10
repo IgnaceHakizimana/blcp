@@ -37,3 +37,6 @@ ui/pnpm-debug.log*
 
 ### Mac ###
 .DS_Store
+
+### Uploaded documents###
+uploads/

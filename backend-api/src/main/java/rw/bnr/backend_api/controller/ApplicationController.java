@@ -12,6 +12,7 @@ import rw.bnr.backend_api.security.CustomUserDetails;
 import rw.bnr.backend_api.service.ApplicationService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -74,5 +75,20 @@ public class ApplicationController {
             .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('APPLICANT')")
+    public ResponseEntity<ApplicationResponse> createDraft(
+        @RequestBody Map<String, String> payload,
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        String companyName = payload.get("companyName");
+        if (companyName == null || companyName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Company name is required");
+        }
+
+        Application saved = applicationService.createDraft(companyName, userDetails.getUser());
+        return ResponseEntity.ok(ApplicationResponse.fromEntity(saved));
     }
 }

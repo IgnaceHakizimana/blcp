@@ -1,5 +1,7 @@
 package rw.bnr.backend_api.service;
 
+import java.nio.file.StandardCopyOption;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +53,7 @@ public class DocumentService {
 
         String storageFileName = UUID.randomUUID() + "_" + fileName;
         Path filePath = uploadPath.resolve(storageFileName);
-        file.transferTo(filePath.toFile());
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         Document document = new Document();
         document.setApplication(application);

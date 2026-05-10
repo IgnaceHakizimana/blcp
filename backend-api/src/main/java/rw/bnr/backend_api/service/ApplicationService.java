@@ -110,4 +110,17 @@ public class ApplicationService {
     public java.util.List<Application> getAllNonDraftApplications() {
         return applicationRepository.findByStatusNot(ApplicationStatus.DRAFT);
     }
+
+    @Transactional
+    public Application createDraft(String companyName, User applicant) {
+        Application application = new Application();
+        application.setApplicant(applicant);
+        application.setCompanyName(companyName);
+        application.setStatus(ApplicationStatus.DRAFT);
+
+        Application saved = applicationRepository.save(application);
+
+        logAudit(saved, applicant, AuditAction.CREATED, null, ApplicationStatus.DRAFT);
+        return saved;
+    }
 }
