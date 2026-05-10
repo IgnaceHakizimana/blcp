@@ -26,19 +26,19 @@ public class DataSeeder implements CommandLineRunner {
         if (userRepository.count() == 0) {
             User applicant = User.builder()
                 .email("applicant@example.com")
-                .passwordHash(passwordEncoder.encode("password123"))
+                .passwordHash(passwordEncoder.encode("test123"))
                 .role(Role.APPLICANT)
                 .build();
 
             User reviewer = User.builder()
                 .email("reviewer@example.com")
-                .passwordHash(passwordEncoder.encode("password456"))
+                .passwordHash(passwordEncoder.encode("test123"))
                 .role(Role.REVIEWER)
                 .build();
 
             User approver = User.builder()
                 .email("approver@example.com")
-                .passwordHash(passwordEncoder.encode("password789"))
+                .passwordHash(passwordEncoder.encode("test123"))
                 .role(Role.APPROVER)
                 .build();
 
