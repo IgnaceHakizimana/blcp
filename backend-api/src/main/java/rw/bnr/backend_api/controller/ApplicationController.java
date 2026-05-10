@@ -7,9 +7,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import rw.bnr.backend_api.dto.ApplicationResponse;
 import rw.bnr.backend_api.model.Application;
+import rw.bnr.backend_api.model.enums.Role;
 import rw.bnr.backend_api.security.CustomUserDetails;
 import rw.bnr.backend_api.service.ApplicationService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -53,5 +55,24 @@ public class ApplicationController {
         @AuthenticationPrincipal CustomUserDetails userDetails) {
         Application application = applicationService.approveApplication(id, userDetails.getUser());
         return ResponseEntity.ok(ApplicationResponse.fromEntity(application));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ApplicationResponse>> getApplications(
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        List<Application> applications;
+
+        if (userDetails.getUser().getRole() == Role.APPLICANT) {
+            applications = applicationService.getApplicationsForApplicant(userDetails.getUser().getId());
+        } else {
+            applications = applicationService.getAllNonDraftApplications();
+        }
+
+        List<ApplicationResponse> response = applications.stream()
+            .map(ApplicationResponse::fromEntity)
+            .toList();
+
+        return ResponseEntity.ok(response);
     }
 }

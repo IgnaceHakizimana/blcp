@@ -100,4 +100,14 @@ public class ApplicationService {
         auditLog.setNewStatus(newStatus);
         auditLogRepository.save(auditLog);
     }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Application> getApplicationsForApplicant(UUID applicantId) {
+        return applicationRepository.findByApplicantId(applicantId);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Application> getAllNonDraftApplications() {
+        return applicationRepository.findByStatusNot(ApplicationStatus.DRAFT);
+    }
 }
