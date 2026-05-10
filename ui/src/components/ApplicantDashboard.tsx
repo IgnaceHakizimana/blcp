@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { apiClient } from '../api/client';
+import {useState, useEffect} from 'react';
+import {apiClient} from '../api/client';
 
 interface Application {
   id: string;
@@ -20,6 +20,18 @@ export default function ApplicantDashboard() {
       console.error("Failed to fetch applications", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleNewApplication = async () => {
+    const companyName = window.prompt("Enter the name of the Bank/Institution:");
+    if (!companyName) return;
+
+    try {
+      await apiClient.post('/applications', {companyName});
+      fetchApplications();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to create application');
     }
   };
 
@@ -65,7 +77,10 @@ export default function ApplicantDashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition">
+        <button
+          onClick={handleNewApplication}
+          className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
+        >
           New Application
         </button>
       </div>
@@ -100,7 +115,8 @@ export default function ApplicantDashboard() {
                 </button>
                 {(app.status === 'DRAFT' || app.status === 'INFO_REQUESTED') && (
                   <>
-                    <label className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300 cursor-pointer font-medium">
+                    <label
+                      className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300 cursor-pointer font-medium">
                       Upload Doc
                       <input
                         type="file"
