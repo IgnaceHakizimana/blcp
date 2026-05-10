@@ -1,12 +1,12 @@
 # Bank Licensing & Compliance Portal
 
-This repository contains the source code for the Bank Licensing & Compliance Portal, a full-stack application designed to digitize and streamline the bank licensing process.
+This repository contains the source code for the Bank Licensing & Compliance Portal, an application designed to digitize the bank licensing process.
 
 The project is divided into two main parts:
-*   `backend-api`: A secure, stateful REST API built with Java and Spring Boot.
-*   `ui`: A functional web interface built with React, TypeScript, and Tailwind CSS v4.
+*   `backend-api`: A REST API built with Java, Spring Boot, and Postgres.
+*   `ui`: A web interface built with React, TypeScript, and Tailwind CSS.
 
-A comprehensive explanation of the system's architecture, data model, and design trade-offs can be found in the `DESIGN_DOCUMENT.md`.
+Detailed explanation of the system's architecture and design trade-offs can be found in the `DESIGN_DOCUMENT.md`.
 
 ---
 
