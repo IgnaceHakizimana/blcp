@@ -48,7 +48,7 @@ Transitions are strictly enforced in the `@Transactional` service layer. Illegal
 *   **Implementation:** Separation of Duties is enforced by persisting the `reviewer_id` during the `UNDER_REVIEW` transition. In the `approveApplication` method, a strict equality check (`reviewer.getId().equals(approver.getId())`) throws an `AccessDeniedException` if they match.
 
 
-### Given More Time
+## 6. Given More Time
 *   **On-Premise Object Storage (MinIO):** Rather than storing documents on the local application server disk, I would integrate an S3-compatible object storage solution like MinIO. Critically, because the Central Bank must adhere to strict data sovereignty and local data protection laws, public cloud solutions like AWS S3 are non-viable. MinIO allows for robust, scalable, on-premise document storage.
 *   **Identity and Access Management (IAM):** I would migrate user authentication and role management out of the custom database tables and into a dedicated, enterprise-grade IAM solution like Keycloak for centralized identity brokering via OAuth2/OIDC.
 *   **Multi-Factor Authentication (MFA):** Given the high-stakes financial nature of the portal, I would enforce strict MFA (via TOTP or hardware security keys) for all internal regulators (`REVIEWER` and `APPROVER` roles). This provides a critical defense against compromised credentials being used to approve banking licenses.
