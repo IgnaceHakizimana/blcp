@@ -37,6 +37,9 @@ public class Application {
     @ToString.Exclude
     private User reviewer;
 
+    @Column(columnDefinition = "TEXT")
+    private String comments;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 

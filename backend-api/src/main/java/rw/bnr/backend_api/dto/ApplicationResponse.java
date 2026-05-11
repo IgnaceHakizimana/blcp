@@ -16,6 +16,7 @@ public class ApplicationResponse {
     private UUID id;
     private String companyName;
     private ApplicationStatus status;
+    private String comments;
     private Instant createdAt;
     private Instant updatedAt;
     private Integer version;
@@ -25,6 +26,7 @@ public class ApplicationResponse {
             .id(application.getId())
             .companyName(application.getCompanyName())
             .status(application.getStatus())
+            .comments(application.getComments())
             .createdAt(application.getCreatedAt())
             .updatedAt(application.getUpdatedAt())
             .version(application.getVersion())

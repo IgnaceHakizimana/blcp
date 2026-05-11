@@ -5,6 +5,7 @@ interface Application {
   id: string;
   companyName: string;
   status: string;
+  comments?: string;
   createdAt: string;
 }
 
@@ -112,9 +113,15 @@ export default function ApplicantDashboard() {
                 </span>
               </div>
 
-              <div className="text-sm text-gray-500 mb-6 flex-grow">
+              <div className="text-sm text-gray-500 mb-2 flex-grow">
                 Created: {new Date(app.createdAt).toLocaleDateString()}
               </div>
+
+              {app.comments && (app.status === 'INFO_REQUESTED' || app.status === 'REJECTED') && (
+                <div className="mt-2 mb-4 p-3 bg-red-50 rounded text-sm text-red-800 italic border-l-4 border-red-400">
+                  <span className="font-bold">Regulator Comment:</span> "{app.comments}"
+                </div>
+              )}
 
               <div className="flex justify-end items-center space-x-3 border-t pt-4 mt-4">
                 <button className="text-brand-blue hover:underline text-sm font-medium">
