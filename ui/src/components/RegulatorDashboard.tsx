@@ -79,12 +79,20 @@ export default function RegulatorDashboard() {
                 )}
 
                 {user?.role === 'REVIEWER' && app.status === 'UNDER_REVIEW' && (
-                  <button
-                    onClick={() => handleAction(app.id, 'recommend-approval')}
-                    className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700"
-                  >
-                    Recommend Approval
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleAction(app.id, 'request-info')}
+                      className="bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700"
+                    >
+                      Request Info
+                    </button>
+                    <button
+                      onClick={() => handleAction(app.id, 'recommend-approval')}
+                      className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700"
+                    >
+                      Recommend Approval
+                    </button>
+                  </>
                 )}
 
                 {user?.role === 'APPROVER' && app.status === 'PENDING_APPROVAL' && (
