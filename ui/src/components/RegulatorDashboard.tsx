@@ -6,6 +6,7 @@ interface Application {
   id: string;
   companyName: string;
   status: string;
+  comments?: string;
   createdAt: string;
 }
 
@@ -13,6 +14,12 @@ export default function RegulatorDashboard() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState<{ id: string; type: 'request-info' | 'reject' } | null>(null);
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchApplications = async () => {
     try {
@@ -29,12 +36,36 @@ export default function RegulatorDashboard() {
     fetchApplications();
   }, []);
 
-  const handleAction = async (id: string, action: string) => {
+  const handleAction = async (id: string, action: string, payload?: any) => {
     try {
-      await apiClient.post(`/applications/${id}/${action}`);
+      await apiClient.post(`/applications/${id}/${action}`, payload);
       fetchApplications();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Action failed');
+    }
+  };
+
+  const openCommentModal = (id: string, type: 'request-info' | 'reject') => {
+    setModalAction({ id, type });
+    setComment('');
+    setIsModalOpen(true);
+  };
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modalAction || !comment.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await apiClient.post(`/applications/${modalAction.id}/${modalAction.type}`, { comments: comment });
+      setIsModalOpen(false);
+      setModalAction(null);
+      setComment('');
+      fetchApplications();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Action failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -67,9 +98,15 @@ export default function RegulatorDashboard() {
                 </span>
               </div>
 
-              <div className="text-sm text-gray-500 mb-6 flex-grow">
+              <div className="text-sm text-gray-500 mb-2 flex-grow">
                 Submitted: {new Date(app.createdAt).toLocaleDateString()}
               </div>
+
+              {app.comments && (
+                <div className="mt-2 mb-4 p-3 bg-gray-50 rounded text-sm text-gray-700 italic border-l-4 border-gray-300">
+                  "{app.comments}"
+                </div>
+              )}
 
               <div className="flex justify-end items-center space-x-3 border-t pt-4 mt-4">
 
@@ -85,7 +122,7 @@ export default function RegulatorDashboard() {
                 {user?.role === 'REVIEWER' && app.status === 'UNDER_REVIEW' && (
                   <>
                     <button
-                      onClick={() => handleAction(app.id, 'request-info')}
+                      onClick={() => openCommentModal(app.id, 'request-info')}
                       className="bg-orange-500 text-white px-3 py-1.5 rounded text-sm hover:bg-orange-600"
                     >
                       Request Info
@@ -100,12 +137,20 @@ export default function RegulatorDashboard() {
                 )}
 
                 {user?.role === 'APPROVER' && app.status === 'PENDING_APPROVAL' && (
-                  <button
-                    onClick={() => handleAction(app.id, 'approve')}
-                    className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700"
-                  >
-                    Approve
-                  </button>
+                  <>
+                    <button
+                      onClick={() => openCommentModal(app.id, 'reject')}
+                      className="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => handleAction(app.id, 'approve')}
+                      className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700"
+                    >
+                      Approve
+                    </button>
+                  </>
                 )}
 
               </div>
@@ -113,6 +158,51 @@ export default function RegulatorDashboard() {
           ))}
         </div>
       )}
+
+      {/* COMMENT MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h2 className="text-xl font-bold mb-4 text-brand-blue">
+              {modalAction?.type === 'reject' ? 'Provide Rejection Reason' : 'Request More Information'}
+            </h2>
+            <form onSubmit={handleCommentSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Comments (Required)
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Please explain the decision or request..."
+                />
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`px-4 py-2 text-white rounded hover:opacity-90 disabled:opacity-50 ${
+                    modalAction?.type === 'reject' ? 'bg-red-600' : 'bg-orange-500'
+                  }`}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

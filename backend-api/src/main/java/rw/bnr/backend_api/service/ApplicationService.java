@@ -36,6 +36,7 @@ public class ApplicationService {
             throw new IllegalStateException("An application must have at least one supporting document before it can be submitted.");
         }
 
+        application.setComments(null);
         ApplicationStatus oldStatus = application.getStatus();
         application.setStatus(ApplicationStatus.SUBMITTED);
 
@@ -60,7 +61,7 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application requestInfo(UUID applicationId, User reviewer) {
+    public Application requestInfo(UUID applicationId, User reviewer, String comments) {
         Application application = getApplicationById(applicationId);
 
         if (application.getStatus() != ApplicationStatus.UNDER_REVIEW) {
@@ -69,6 +70,7 @@ public class ApplicationService {
 
         ApplicationStatus oldStatus = application.getStatus();
         application.setStatus(ApplicationStatus.INFO_REQUESTED);
+        application.setComments(comments);
 
         logAudit(application, reviewer, AuditAction.INFO_REQUESTED, oldStatus, ApplicationStatus.INFO_REQUESTED);
         return applicationRepository.save(application);
@@ -84,6 +86,7 @@ public class ApplicationService {
 
         ApplicationStatus oldStatus = application.getStatus();
         application.setStatus(ApplicationStatus.PENDING_APPROVAL);
+        application.setComments(null);
 
         logAudit(application, reviewer, AuditAction.RECOMMENDED_FOR_APPROVAL, oldStatus, ApplicationStatus.PENDING_APPROVAL);
         return applicationRepository.save(application);
@@ -103,8 +106,29 @@ public class ApplicationService {
 
         ApplicationStatus oldStatus = application.getStatus();
         application.setStatus(ApplicationStatus.APPROVED);
+        application.setComments(null);
 
         logAudit(application, approver, AuditAction.APPROVED, oldStatus, ApplicationStatus.APPROVED);
+        return applicationRepository.save(application);
+    }
+
+    @Transactional
+    public Application rejectApplication(UUID applicationId, User approver, String comments) {
+        Application application = getApplicationById(applicationId);
+
+        if (application.getStatus() != ApplicationStatus.PENDING_APPROVAL) {
+            throw new IllegalStateException("Application must be PENDING_APPROVAL to be rejected.");
+        }
+
+        if (application.getReviewer() != null && application.getReviewer().getId().equals(approver.getId())) {
+            throw new AccessDeniedException("The user who reviewed the application cannot make the final approval decision.");
+        }
+
+        ApplicationStatus oldStatus = application.getStatus();
+        application.setStatus(ApplicationStatus.REJECTED);
+        application.setComments(comments);
+
+        logAudit(application, approver, AuditAction.REJECTED, oldStatus, ApplicationStatus.REJECTED);
         return applicationRepository.save(application);
     }
 

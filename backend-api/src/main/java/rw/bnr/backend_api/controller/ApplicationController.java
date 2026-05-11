@@ -44,8 +44,10 @@ public class ApplicationController {
     @PreAuthorize("hasRole('REVIEWER')")
     public ResponseEntity<ApplicationResponse> requestInfo(
         @PathVariable UUID id,
+        @RequestBody(required = false) Map<String, String> payload,
         @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Application application = applicationService.requestInfo(id, userDetails.getUser());
+        String comments = payload != null ? payload.get("comments") : null;
+        Application application = applicationService.requestInfo(id, userDetails.getUser(), comments);
         return ResponseEntity.ok(ApplicationResponse.fromEntity(application));
     }
 
@@ -64,6 +66,17 @@ public class ApplicationController {
         @PathVariable UUID id,
         @AuthenticationPrincipal CustomUserDetails userDetails) {
         Application application = applicationService.approveApplication(id, userDetails.getUser());
+        return ResponseEntity.ok(ApplicationResponse.fromEntity(application));
+    }
+
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasRole('APPROVER')")
+    public ResponseEntity<ApplicationResponse> rejectApplication(
+        @PathVariable UUID id,
+        @RequestBody(required = false) Map<String, String> payload,
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        String comments = payload != null ? payload.get("comments") : null;
+        Application application = applicationService.rejectApplication(id, userDetails.getUser(), comments);
         return ResponseEntity.ok(ApplicationResponse.fromEntity(application));
     }
 
