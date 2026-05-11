@@ -40,6 +40,15 @@ public class ApplicationController {
         return ResponseEntity.ok(ApplicationResponse.fromEntity(application));
     }
 
+    @PostMapping("/{id}/request-info")
+    @PreAuthorize("hasRole('REVIEWER')")
+    public ResponseEntity<ApplicationResponse> requestInfo(
+        @PathVariable UUID id,
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Application application = applicationService.requestInfo(id, userDetails.getUser());
+        return ResponseEntity.ok(ApplicationResponse.fromEntity(application));
+    }
+
     @PostMapping("/{id}/recommend-approval")
     @PreAuthorize("hasRole('REVIEWER')")
     public ResponseEntity<ApplicationResponse> recommendApproval(

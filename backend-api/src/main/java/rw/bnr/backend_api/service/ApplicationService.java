@@ -11,6 +11,7 @@ import rw.bnr.backend_api.model.enums.ApplicationStatus;
 import rw.bnr.backend_api.model.enums.AuditAction;
 import rw.bnr.backend_api.repository.ApplicationRepository;
 import rw.bnr.backend_api.repository.AuditLogRepository;
+import rw.bnr.backend_api.repository.DocumentRepository;
 
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final AuditLogRepository auditLogRepository;
+    private final DocumentRepository documentRepository;
 
     @Transactional
     public Application submitApplication(UUID applicationId, User currentUser) {
@@ -27,6 +29,11 @@ public class ApplicationService {
 
         if (application.getStatus() != ApplicationStatus.DRAFT && application.getStatus() != ApplicationStatus.INFO_REQUESTED) {
             throw new IllegalStateException("Application can only be submitted from DRAFT or INFO_REQUESTED state.");
+        }
+
+        long documentCount = documentRepository.countByApplicationId(applicationId);
+        if (documentCount == 0) {
+            throw new IllegalStateException("An application must have at least one supporting document before it can be submitted.");
         }
 
         ApplicationStatus oldStatus = application.getStatus();
@@ -49,6 +56,21 @@ public class ApplicationService {
         application.setReviewer(reviewer);
 
         logAudit(application, reviewer, AuditAction.REVIEW_STARTED, oldStatus, ApplicationStatus.UNDER_REVIEW);
+        return applicationRepository.save(application);
+    }
+
+    @Transactional
+    public Application requestInfo(UUID applicationId, User reviewer) {
+        Application application = getApplicationById(applicationId);
+
+        if (application.getStatus() != ApplicationStatus.UNDER_REVIEW) {
+            throw new IllegalStateException("Only applications UNDER_REVIEW can be sent back for info.");
+        }
+
+        ApplicationStatus oldStatus = application.getStatus();
+        application.setStatus(ApplicationStatus.INFO_REQUESTED);
+
+        logAudit(application, reviewer, AuditAction.INFO_REQUESTED, oldStatus, ApplicationStatus.INFO_REQUESTED);
         return applicationRepository.save(application);
     }
 
