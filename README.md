@@ -73,14 +73,14 @@ The test suite uses Testcontainers and runs comprehensive integration tests for 
     npm run dev
     ```
     The application will be accessible at `http://localhost:5173`. 
-    *(Note: Ensure the Spring Boot backend is also running, as the Vite server automatically proxies `/api` requests to port 8080).*
+    *(Note: Ensure the backend is also running).*
 
 ---
 
 ## Seed Data & Testing the UI
 On the first run against an empty database, the application will automatically seed the database with one user for each role and two sample applications. 
 
-You can log into the React UI (`http://localhost:5173/login`) with the following credentials to test the role-based routing and state machine:
+You can log in with the following credentials:
 
 *   **Applicant:** `applicant@example.com` / `test123`
 *   **Reviewer:** `reviewer@example.com` / `test123`
