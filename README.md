@@ -15,21 +15,29 @@ Detailed explanation of the system's architecture and design trade-offs can be f
 ### Prerequisites
 *   **Java 25**
 *   **Maven 3.8+**
-*   **Docker Desktop** (must be running for the database to spin up)
+*   **Docker Desktop** (must be running for the test database to spin up)
+*   **PostgreSQL** (must be running locally for the main application)
 
 ### How to Run the Backend
-The backend is configured to use **Testcontainers**. This means it will automatically spin up a temporary, isolated PostgreSQL database inside Docker for both running the application and executing tests.
+The backend requires a local PostgreSQL database to be running. You must create an empty database first before starting the application. 
 
-**No manual database setup is required.**
+By default, the application attempts to connect to `jdbc:postgresql://localhost:5432/blcp` using the username `postgres` and password `postgres`. If your setup is different, you must inject your credentials via environment variables.
 
-1.  **Navigate to the backend directory:**
+1.  **Create the database:**
+    Log into your local PostgreSQL instance and run:
+    ```sql
+    CREATE DATABASE blcp;
+    ```
+2.  **Navigate to the backend directory:**
     ```sh
     cd backend-api
     ```
-2.  **Run the Spring Boot application:**
+3.  **Run the Spring Boot application:**
+    Provide your full database connection details when running the command:
     ```sh
-    ./mvnw spring-boot:run
+    DB_URL=jdbc:postgresql://localhost:5432/your_db_name DB_USERNAME=your_username DB_PASSWORD=your_password ./mvnw spring-boot:run
     ```
+    
     The API will start on `http://localhost:8080`.
 
 ### How to Run the Backend Tests
