@@ -3,6 +3,8 @@ package rw.bnr.backend_api.service;
 import java.nio.file.StandardCopyOption;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,5 +67,29 @@ public class DocumentService {
         document.setVersionNumber(version);
 
         return documentRepository.save(document);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Document> getDocumentsByApplicationId(UUID applicationId) {
+        return documentRepository.findByApplicationIdOrderByUploadedAtDesc(applicationId);
+    }
+
+    @Transactional(readOnly = true)
+    public Resource getDocumentResource(UUID documentId) throws IOException {
+        Document document = documentRepository.findById(documentId)
+            .orElseThrow(() -> new IllegalArgumentException("Document not found"));
+
+        Path filePath = Paths.get(document.getStoragePath());
+        if (!Files.exists(filePath)) {
+            throw new IllegalArgumentException("File not found on disk");
+        }
+
+        return new UrlResource(filePath.toUri());
+    }
+
+    @Transactional(readOnly = true)
+    public Document getDocumentById(UUID documentId) {
+        return documentRepository.findById(documentId)
+            .orElseThrow(() -> new IllegalArgumentException("Document not found"));
     }
 }

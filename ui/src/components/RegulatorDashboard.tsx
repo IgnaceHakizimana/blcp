@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
+interface Document {
+  id: string;
+  fileName: string;
+  versionNumber: number;
+  uploadedAt: string;
+}
+
 interface Application {
   id: string;
   companyName: string;
@@ -15,11 +22,15 @@ export default function RegulatorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState<{ id: string; type: 'request-info' | 'reject' } | null>(null);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [activeAppId, setActiveAppId] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
 
   const fetchApplications = async () => {
     try {
@@ -69,6 +80,24 @@ export default function RegulatorDashboard() {
     }
   };
 
+  const openDocumentsModal = async (appId: string) => {
+    setActiveAppId(appId);
+    setIsDocModalOpen(true);
+    setIsLoadingDocs(true);
+    try {
+      const response = await apiClient.get(`/applications/${appId}/documents`);
+      setDocuments(response.data);
+    } catch (error) {
+      console.error("Failed to fetch documents", error);
+    } finally {
+      setIsLoadingDocs(false);
+    }
+  };
+
+  const downloadDocument = (appId: string, docId: string) => {
+    window.open(`http://localhost:8080/api/applications/${appId}/documents/${docId}/download`, '_blank');
+  };
+
   if (isLoading) return <div className="text-center py-10">Loading applications...</div>;
 
   return (
@@ -108,58 +137,64 @@ export default function RegulatorDashboard() {
                 </div>
               )}
 
-              <div className="flex justify-end items-center space-x-3 border-t pt-4 mt-4">
+              <div className="flex justify-between items-center border-t pt-4 mt-4">
+                <button
+                  onClick={() => openDocumentsModal(app.id)}
+                  className="text-brand-blue hover:underline text-sm font-medium"
+                >
+                  View Documents
+                </button>
 
-                {user?.role === 'REVIEWER' && app.status === 'SUBMITTED' && (
-                  <button
-                    onClick={() => handleAction(app.id, 'review')}
-                    className="bg-brand-blue text-white px-3 py-1.5 rounded text-sm hover:opacity-90"
-                  >
-                    Start Review
-                  </button>
-                )}
+                <div className="flex items-center space-x-3">
+                  {user?.role === 'REVIEWER' && app.status === 'SUBMITTED' && (
+                    <button
+                      onClick={() => handleAction(app.id, 'review')}
+                      className="bg-brand-blue text-white px-3 py-1.5 rounded text-sm hover:opacity-90"
+                    >
+                      Start Review
+                    </button>
+                  )}
 
-                {user?.role === 'REVIEWER' && app.status === 'UNDER_REVIEW' && (
-                  <>
-                    <button
-                      onClick={() => openCommentModal(app.id, 'request-info')}
-                      className="bg-orange-500 text-white px-3 py-1.5 rounded text-sm hover:bg-orange-600"
-                    >
-                      Request Info
-                    </button>
-                    <button
-                      onClick={() => handleAction(app.id, 'recommend-approval')}
-                      className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700"
-                    >
-                      Recommend Approval
-                    </button>
-                  </>
-                )}
+                  {user?.role === 'REVIEWER' && app.status === 'UNDER_REVIEW' && (
+                    <>
+                      <button
+                        onClick={() => openCommentModal(app.id, 'request-info')}
+                        className="bg-orange-500 text-white px-3 py-1.5 rounded text-sm hover:bg-orange-600"
+                      >
+                        Request Info
+                      </button>
+                      <button
+                        onClick={() => handleAction(app.id, 'recommend-approval')}
+                        className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700"
+                      >
+                        Recommend Approval
+                      </button>
+                    </>
+                  )}
 
-                {user?.role === 'APPROVER' && app.status === 'PENDING_APPROVAL' && (
-                  <>
-                    <button
-                      onClick={() => openCommentModal(app.id, 'reject')}
-                      className="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700"
-                    >
-                      Reject
-                    </button>
-                    <button
-                      onClick={() => handleAction(app.id, 'approve')}
-                      className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700"
-                    >
-                      Approve
-                    </button>
-                  </>
-                )}
-
+                  {user?.role === 'APPROVER' && app.status === 'PENDING_APPROVAL' && (
+                    <>
+                      <button
+                        onClick={() => openCommentModal(app.id, 'reject')}
+                        className="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleAction(app.id, 'approve')}
+                        className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* COMMENT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
@@ -199,6 +234,47 @@ export default function RegulatorDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DOCUMENTS MODAL */}
+      {isDocModalOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+            <h2 className="text-xl font-bold mb-4 text-brand-blue">Uploaded Documents</h2>
+
+            {isLoadingDocs ? (
+              <div className="text-center py-4">Loading documents...</div>
+            ) : documents.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">No documents uploaded yet.</div>
+            ) : (
+              <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
+                {documents.map((doc) => (
+                  <li key={doc.id} className="py-3 flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{doc.fileName}</p>
+                      <p className="text-xs text-gray-500">v{doc.versionNumber} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                    </div>
+                    <button
+                      onClick={() => activeAppId && downloadDocument(activeAppId, doc.id)}
+                      className="text-brand-blue hover:underline text-sm font-medium bg-brand-light px-3 py-1 rounded"
+                    >
+                      Download
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsDocModalOpen(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -53,14 +53,12 @@ public class SecurityAuthorizationTest {
     @Test
     @WithMockUser(roles = "APPLICANT")
     void applicant_CanSubmitApplication() {
-        // Will succeed without throwing AccessDeniedException
         applicationController.submitApplication(appId, applicantDetails);
     }
 
     @Test
     @WithMockUser(roles = "APPLICANT")
     void applicant_CannotApproveApplication() {
-        // Spring Security AOP intercepts and denies access
         assertThrows(AccessDeniedException.class, () -> {
             applicationController.approveApplication(appId, applicantDetails);
         });
