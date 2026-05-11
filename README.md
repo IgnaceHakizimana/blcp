@@ -77,7 +77,7 @@ The test suite uses Testcontainers and runs comprehensive integration tests for 
 
 ---
 
-## Seed Data & Testing the UI
+## Seed Data & Testing the system
 On the first run against an empty database, the application will automatically seed the database with one user for each role and two sample applications. 
 
 You can log in with the following credentials:
